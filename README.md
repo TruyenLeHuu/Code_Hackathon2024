@@ -1,6 +1,9 @@
 # #Code-Hackathon2024
 Prepare API and Scenes for Code_LikeaBosch Hackathon2024
 
+!! Caution Nguyen and Thien,...
+!!! Don't replace all folder, just 03_Client and 04_Template
+
 # Spawn scene by using: 
         start_scene(number)
                 number is 1 to 5 (scene 1 to 5)

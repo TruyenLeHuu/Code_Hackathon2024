@@ -72,13 +72,17 @@ class General():
 
         rospy.init_node('nvidia_node', anonymous=True)
 
-        self.subcribe_carla_topics()
+        self.subcribe_carla_topics()s
 
         # Create a flag to track whether to exit
         self.exit_flag = False
 
         # Set up a callback for Ctrl + C
         rospy.on_shutdown(self.shutdown)
+
+        print("Initing...")
+        while (self.traffic_lights_status == None or self.traffic_sign_info == None ):
+            time.sleep(0.5)
 
     def subcribe_carla_topics(self):
         rospy.Subscriber(   "/clock", Clock, self.get_carla_clock)

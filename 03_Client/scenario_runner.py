@@ -26,7 +26,6 @@ class Scenario_Runner():
     #     # Sort points by angle from the center
     #     sorted_points = sorted(points, key=lambda p: math.atan2(p[1] - center[1], p[0] - center[0]), reverse=True)
     #     return sorted_points
-
     def is_point_in_polygon(self, point, polygon):
         # point = self.order_points_counterclockwise(_point)
         x, y = point
@@ -49,6 +48,10 @@ class Scenario_Runner():
         vehicle_location = vehicle.get_transform().location
         vehicle_point = (vehicle_location.x, vehicle_location.y)
         return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.traffic_area_1)
+    def is_vehicle_in_lane_1(self, vehicle):
+        vehicle_location = vehicle.get_transform().location
+        vehicle_point = (vehicle_location.x, vehicle_location.y)
+        return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.lane_area_1)
 
     def is_vehicle_in_weather_area_1(self, vehicle):
         vehicle_location = vehicle.get_transform().location
@@ -59,6 +62,12 @@ class Scenario_Runner():
         vehicle_location = vehicle.get_transform().location
         vehicle_point = (vehicle_location.x, vehicle_location.y)
         return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.weather_area_2)
+    
+    def check_in_lane_1(self, vehicle, hud):
+        if (self.is_vehicle_in_lane_1(vehicle)):
+            hud.is_minus = True
+        else:
+            hud.is_minus = False
 
     def destroy(self):
         """

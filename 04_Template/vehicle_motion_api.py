@@ -6,7 +6,7 @@ Class for carla
 
 import rospy
 import time
-from std_msgs.msg import Header, String, Int32, Float32
+from std_msgs.msg import Header, String, Int32, Float32, Bool
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2, Imu
 from geometry_msgs.msg import Quaternion, Vector3, Pose
@@ -34,6 +34,7 @@ class General():
         self.collision = None
         self.gnss = None
         self.imu = None
+        self.is_correct_lane = None
         self.vehicle_obstacle = None
         self.camera_info = None
         self.image = None
@@ -78,17 +79,18 @@ class General():
 
     def subcribe_carla_topics(self):
         rospy.Subscriber(   "/clock", Clock, self.get_carla_clock)
-        rospy.Subscriber(   "/carla/hero/vehicle_status", CarlaEgoVehicleStatus, self.get_carla_vehicle_status)
-        rospy.Subscriber(   "/carla/hero/vehicle_info", CarlaEgoVehicleInfo, self.get_carla_vehicle_info)
-        rospy.Subscriber(   "/carla/hero/odometry", Odometry, self.get_carla_odometry)
-        rospy.Subscriber(   "/carla/hero/gnss", NavSatFix, self.get_vehicle_gnss)
-        rospy.Subscriber(   "/carla/hero/imu", Imu, self.get_vehicle_imu)
-        rospy.Subscriber(   "/carla/hero/obstacle", CarlaEgoVehicleObstacle, self.get_vehicle_obstacle)
-        rospy.Subscriber(   "/carla/hero/vehicle_door_status", CarlaEgoVehicleDoorStatus, self.get_door_status)
-        rospy.Subscriber(   "/carla/traffic_light_status", CarlaTrafficLightList, self.get_traffic_light_status)
-        rospy.Subscriber(   "/carla/traffic_sign_info", CarlaTrafficSignList, self.get_traffic_sign_info)
-        rospy.Subscriber(   "/carla/weather_status", String, self.get_weather_status)
+        rospy.Subscriber(   "/carla/hero/vehicle_status", CarlaEgoVehicleStatus, self.get_carla_vehicle_status_msg)
+        rospy.Subscriber(   "/carla/hero/vehicle_info", CarlaEgoVehicleInfo, self.get_carla_vehicle_info_msg)
+        rospy.Subscriber(   "/carla/hero/odometry", Odometry, self.get_carla_odometry_msg)
+        rospy.Subscriber(   "/carla/hero/gnss", NavSatFix, self.get_vehicle_gnss_msg)
+        rospy.Subscriber(   "/carla/hero/imu", Imu, self.get_vehicle_imu_msg)
+        rospy.Subscriber(   "/carla/hero/obstacle", CarlaEgoVehicleObstacle, self.get_vehicle_obstacle_msg)
+        rospy.Subscriber(   "/carla/hero/vehicle_door_status", CarlaEgoVehicleDoorStatus, self.get_door_status_msg)
+        rospy.Subscriber(   "/carla/traffic_light_status", CarlaTrafficLightList, self.get_traffic_light_status_msg)
+        rospy.Subscriber(   "/carla/traffic_sign_info", CarlaTrafficSignList, self.get_traffic_sign_info_msg)
+        rospy.Subscriber(   "/carla/weather_status", String, self.get_weather_status_msg)
         rospy.Subscriber(   "/carla/hero/collision", Float32, self.get_collision_msg)
+        rospy.Subscriber(   "/carla/hero/is_correct_lane", Bool, self.get_is_correct_lane_msg)
 
     def vehicle_control_manual_override(self, override):
         # Create a publisher for the vehicle control command
@@ -306,10 +308,13 @@ class General():
     def get_collision(self):
         return self.collision
     
+    def is_correct_lane(self):
+        return self.is_correct_lane
+    
     def get_carla_clock(self, message):
         self.clock = message
 
-    def get_carla_vehicle_status(self, msg):
+    def get_carla_vehicle_status_msg(self, msg):
         self.vehicle_velocity = msg.velocity
         self.vehicle_acceleration = msg.acceleration
         self.vehicle_orientation = msg.orientation
@@ -317,31 +322,31 @@ class General():
         self.vehicle_location = msg.location
         self.vehicle_controls = msg.control
 
-    def get_carla_vehicle_info(self, msg):
+    def get_carla_vehicle_info_msg(self, msg):
         """
         gets vehicle_info
         """
         self.vehicle_info = msg
     
-    def get_carla_odometry(self, msg):
+    def get_carla_odometry_msg(self, msg):
         """
         gets Odometry
         """
         self.odometry = msg
 
-    def get_vehicle_gnss(self, msg):
+    def get_vehicle_gnss_msg(self, msg):
         """
         gets Gnss
         """
         self.gnss = msg
 
-    def get_vehicle_imu(self, msg):
+    def get_vehicle_imu_msg(self, msg):
         """
         gets IMU sensor node
         """
         self.imu = msg
 
-    def get_vehicle_obstacle(self, msg):
+    def get_vehicle_obstacle_msg(self, msg):
         """
         gets obstacle sensor
         """
@@ -355,19 +360,19 @@ class General():
             msg.obstacle_distance = 200
         self.vehicle_obstacle = msg
     
-    def get_traffic_light_status(self, msg):
+    def get_traffic_light_status_msg(self, msg):
         """
         gets traffic_lights
         """
         self.traffic_lights_status = msg
     
-    def get_traffic_sign_info(self, msg):
+    def get_traffic_sign_info_msg(self, msg):
         """
         gets traffic_lights
         """
         self.traffic_sign_info = msg
 
-    def get_weather_status(self, msg):
+    def get_weather_status_msg(self, msg):
         """
         gets traffic_lights
         """
@@ -375,11 +380,17 @@ class General():
 
     def get_collision_msg(self, msg):
         """
-        gets traffic_lights
+        gets collision_msg
         """
         self.collision = msg.data
 
-    def get_door_status(self, msg):
+    def get_is_correct_lane_msg(self, msg):
+        """
+        gets is_correct_lane
+        """
+        self.is_correct_lane = msg.data
+
+    def get_door_status_msg(self, msg):
         """
         gets traffic_lights
         """

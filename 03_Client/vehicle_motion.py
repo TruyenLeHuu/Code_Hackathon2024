@@ -12,6 +12,7 @@ import threading
 import rospy
 from std_msgs.msg import Int32
 from configparser import ConfigParser
+from config_param import ParkingScenario
 
 
 import numpy as np
@@ -21,7 +22,12 @@ try:
     import pygame
     from pygame.locals import KMOD_CTRL
     from pygame.locals import KMOD_SHIFT
-    from pygame.locals import K_0
+    from pygame.locals import K_1
+    from pygame.locals import K_2
+    from pygame.locals import K_3
+    from pygame.locals import K_4
+    from pygame.locals import K_5
+    from pygame.locals import K_6
     from pygame.locals import K_9
     from pygame.locals import K_BACKQUOTE
     from pygame.locals import K_BACKSPACE
@@ -189,6 +195,10 @@ class HUD(object):
         self.detectedCar = 0
         self.detectedWeather = 0
         self.detectedDoor = 0
+        self.is_minus = 0
+        self.short_time_distance = 0
+        self.long_time_distance = 0
+        
         self.score = 100
         self.ros = _ros
         self.dim = (width, height)
@@ -335,6 +345,13 @@ class HUD(object):
 
     def minus_score(self, score_minus):
         self.score = self.score - score_minus
+    
+    def long_minus_score_with_condition(self, score_minus):
+        if (self.is_minus):
+            if (time.time() - self.long_time_distance > 1):
+                self.score = self.score - score_minus
+                self.long_time_distance = time.time()
+
 
     def notification(self, text, seconds=2.0):
         self._notifications.set_text(text, seconds=seconds)
@@ -721,6 +738,8 @@ class DualControl(object):
         self._parent = parent
         self._steer_cache = 0.0
         self._control = carla.VehicleControl()
+        self._scenario = ParkingScenario()
+        self.actor_list = []
         # initialize steering wheel
         self.is_connect_with_VM = 0
 
@@ -818,7 +837,88 @@ class DualControl(object):
 
         # Spawn the pedestrian at the start point of the crosswalk
         self.create_pedestrian(world, start_point, end_point)
+
+    def respawn_car_scene_1(self, world_carla):
+
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[0])
+
+        for actor in self.actor_list:
+            if actor is not None:
+                actor.destroy()
+                self.actor_list.remove(actor)
+                
+        blueprint = random.choice(world_carla.get_blueprint_library().filter('vehicle.tesla.model3'))
+
+        if blueprint.has_attribute("driver_id"):
+            driver_id = random.choice(
+                blueprint.get_attribute("driver_id").recommended_values
+            )
+            blueprint.set_attribute("driver_id", driver_id)
+        try:
+            blueprint.set_attribute("role_name", "autopilot")
+        except IndexError:
+            pass
+        vehicle_init_position  = [
+            carla.Transform(carla.Location(x=-270, y=40, z=0.5), carla.Rotation(yaw=270))]
+
+        vehicle = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
+
+        self.actor_list.append(vehicle)
+    
+    def respawn_car_scene_2(self):
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[1])
+        for actor in self.actor_list:
+            if actor is not None:
+                actor.destroy()
+                self.actor_list.remove(actor)
+                
+
+    def respawn_car_scene_3(self, world_carla):
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[2])
+        for actor in self.actor_list:
+            if actor is not None:
+                actor.destroy()
+                self.actor_list.remove(actor)
+
+        blueprint = random.choice(world_carla.get_blueprint_library().filter('vehicle.tesla.model3'))
+
+        if blueprint.has_attribute("driver_id"):
+            driver_id = random.choice(
+                blueprint.get_attribute("driver_id").recommended_values
+            )
+            blueprint.set_attribute("driver_id", driver_id)
+        try:
+            blueprint.set_attribute("role_name", "autopilot")
+        except IndexError:
+            pass
+
+        vehicle_init_position  = [
+            carla.Transform(carla.Location(x=151, y=32.6, z=0.5), carla.Rotation(yaw=90)),
+            carla.Transform(carla.Location(x=156.4, y=57.3, z=0.5), carla.Rotation(yaw=90)),
+            carla.Transform(carla.Location(x=151.3, y=77.6, z=0.5), carla.Rotation(yaw=90))]
         
+        vehicle1 = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
+        vehicle2 = world_carla.spawn_actor(blueprint, vehicle_init_position[1])
+        vehicle3 = world_carla.spawn_actor(blueprint, vehicle_init_position[2])
+        
+        self.actor_list.append(vehicle1)
+        self.actor_list.append(vehicle2)
+        self.actor_list.append(vehicle3)
+    
+    def respawn_car_scene_4(self):
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[3])
+        for actor in self.actor_list:
+            if actor is not None:
+                actor.destroy()
+                self.actor_list.remove(actor)
+
+    def respawn_car_scene_5(self):
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[4])
+        for actor in self.actor_list:
+            if actor is not None:
+                actor.destroy()
+                self.actor_list.remove(actor)
+
     def parse_events(self, world, clock, player, world_carla):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -885,13 +985,23 @@ class DualControl(object):
                     world.next_weather()
                 elif event.key == K_BACKQUOTE:
                     world.camera_manager.next_sensor()
-                elif event.key > K_0 and event.key <= K_9:
-                    world.camera_manager.set_sensor(event.key - 1 - K_0)
+                elif event.key == K_1:
+                    self.respawn_car_scene_1(world_carla)
+                elif event.key == K_2:
+                    self.respawn_car_scene_2()
+                elif event.key == K_3:
+                    self.respawn_car_scene_3(world_carla)
+                elif event.key == K_4:
+                    self.respawn_car_scene_4()
+                elif event.key == K_5:
+                    self.respawn_car_scene_5()
+                elif event.key > K_6 and event.key <= K_9:
+                    world.camera_manager.set_sensor(event.key - 1 - K_6)
                 elif event.key == K_q:
                     self._parent.gear = 1 if self._parent._reverse else -1
                 elif event.key == K_p:
-                    new_location = carla.Location(x=-270, y=67, z=0.5)
-                    new_transform = carla.Transform(new_location, carla.Rotation(yaw=-90))
+                    new_location = carla.Location(x=190, y=-114, z=0.05)
+                    new_transform = carla.Transform(new_location, carla.Rotation(yaw=90))
                     self._parent.vehicle_controller.vehicle.set_transform(new_transform)
                     # self._parent.move_to_parking_slot()
                     # self._parent.move_to_parking_slot()

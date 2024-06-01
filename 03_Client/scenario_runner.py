@@ -48,10 +48,16 @@ class Scenario_Runner():
         vehicle_location = vehicle.get_transform().location
         vehicle_point = (vehicle_location.x, vehicle_location.y)
         return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.traffic_area_1)
+    
     def is_vehicle_in_lane_1(self, vehicle):
         vehicle_location = vehicle.get_transform().location
         vehicle_point = (vehicle_location.x, vehicle_location.y)
         return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.lane_area_1)
+    
+    def is_vehicle_in_lane_1_4(self, vehicle):
+        vehicle_location = vehicle.get_transform().location
+        vehicle_point = (vehicle_location.x, vehicle_location.y)
+        return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.lane_area_1_4)
 
     def is_vehicle_in_weather_area_1(self, vehicle):
         vehicle_location = vehicle.get_transform().location
@@ -68,6 +74,12 @@ class Scenario_Runner():
             hud.is_minus = True
         else:
             hud.is_minus = False
+
+    def check_in_lane_1_4(self, vehicle, hud):
+        if (self.is_vehicle_in_lane_1_4(vehicle)):
+            hud.is_lane_1 = True
+        else:
+            hud.is_lane_1 = False
 
     def destroy(self):
         """

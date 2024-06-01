@@ -16,8 +16,9 @@ def main():
             # VM.General.vehicle_control_manual(throttle=1, brake=0)
             # time.sleep(1)
             # VM.General.vehicle_control_manual(throttle=0, brake=1)
-            VM.General.vehicle_control_light("On")
-            print(VM.General.get_collision())
+            # VM.General.vehicle_control_light("On")
+            VM.General.start_scene(1)
+            print(VM.General.get_vehicle_obstacle())
             time.sleep(1)
             # VM.General.vehicle_control_manual_override(False)
             # break

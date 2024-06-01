@@ -68,6 +68,7 @@ class CarlaClient():
             self.ros_connection.take_hud(hud)
             world = World(world_carla, hud, 'vehicle.*', self.vehicle_controller.vehicle, self.ros_connection)
             controller = DualControl(self)
+            self.ros_connection.take_controller_and_world(controller, world_carla)
             clock = pygame.time.Clock()
             self.is_traffic_1 = False
             while True:
@@ -76,6 +77,7 @@ class CarlaClient():
                 self.ros_connection.publish_obstacle_distance()
                 self.ros_connection.publish_traffic_sign_info()
                 self.scenario_runner.check_in_lane_1(self.vehicle_controller.vehicle, hud)
+                self.scenario_runner.check_in_lane_1_4(self.vehicle_controller.vehicle, hud)
                 hud.long_minus_score_with_condition(1)
                 # self.ros_connection.keep_topic_alive()
                 if (self.scenario_runner.is_vehicle_in_weather_area_1(self.vehicle_controller.vehicle)):

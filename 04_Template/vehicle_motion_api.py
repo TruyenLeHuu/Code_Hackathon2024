@@ -55,6 +55,8 @@ class General():
         self.traffic_lights_status = None
         self.door_status = None
         self.weather = None
+        self.current_lane = None
+        self.run_time = None
 
         # Initialize ROS node
         self.control_override_pub = rospy.Publisher('/carla/hero/vehicle_control_manual_override', Bool, queue_size=10)
@@ -66,6 +68,7 @@ class General():
         self.door_FR_control = rospy.Publisher('/carla/hero/vehicle_toggle_FR_door', Int32, queue_size=10)
         self.door_RL_control = rospy.Publisher('/carla/hero/vehicle_toggle_RL_door', Int32, queue_size=10)
         self.door_RR_control = rospy.Publisher('/carla/hero/vehicle_toggle_RR_door', Int32, queue_size=10)
+        self.pub_start_scene = rospy.Publisher('/carla/start_scene', Int32, queue_size=10)
 
         rospy.init_node('nvidia_node', anonymous=True)
 
@@ -91,6 +94,8 @@ class General():
         rospy.Subscriber(   "/carla/weather_status", String, self.get_weather_status_msg)
         rospy.Subscriber(   "/carla/hero/collision", Float32, self.get_collision_msg)
         rospy.Subscriber(   "/carla/hero/is_correct_lane", Bool, self.get_is_correct_lane_msg)
+        rospy.Subscriber(   "/carla/hero/current_lane", String, self.get_current_lane_msg)
+        rospy.Subscriber(   "/carla/hero/run_time", Int32, self.get_run_time_msg)
 
     def vehicle_control_manual_override(self, override):
         # Create a publisher for the vehicle control command
@@ -160,11 +165,9 @@ class General():
     def vehicle_control_toggle_door_FL(self):
         self.door_FL_control.publish(1)
 
-    
     def vehicle_control_toggle_door_RL(self):
         self.door_RL_control.publish(1)
 
-    
     def vehicle_control_toggle_door_FR(self):
         self.door_FR_control.publish(1)
     
@@ -173,6 +176,9 @@ class General():
     
     def vehicle_control_light(self, control):
         self.light_control.publish(control)
+
+    def start_scene(self, scene_number):
+        self.pub_start_scene.publish(scene_number)
 
     """ Velocity value return:
         1.2 (m/s)
@@ -308,9 +314,15 @@ class General():
     def get_collision(self):
         return self.collision
     
-    def is_correct_lane(self):
+    def get_is_correct_lane(self):
         return self.is_correct_lane
     
+    def get_current_lane(self):
+        return self.current_lane
+    
+    def get_run_time(self):
+        return self.run_time
+
     def get_carla_clock(self, message):
         self.clock = message
 
@@ -364,13 +376,13 @@ class General():
         """
         gets traffic_lights
         """
-        self.traffic_lights_status = msg
+        self.traffic_lights_status = msg.traffic_lights
     
     def get_traffic_sign_info_msg(self, msg):
         """
         gets traffic_lights
         """
-        self.traffic_sign_info = msg
+        self.traffic_sign_info = msg.traffic_signs
 
     def get_weather_status_msg(self, msg):
         """
@@ -389,6 +401,19 @@ class General():
         gets is_correct_lane
         """
         self.is_correct_lane = msg.data
+
+    def get_current_lane_msg(self, msg):
+        """
+        gets current_lane
+        """
+        self.current_lane = msg.data
+
+    def get_run_time_msg(self, msg):
+        """
+        gets run_time
+        """
+        self.run_time = msg.data
+    
 
     def get_door_status_msg(self, msg):
         """

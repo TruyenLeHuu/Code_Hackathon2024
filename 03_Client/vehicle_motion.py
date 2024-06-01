@@ -195,10 +195,11 @@ class HUD(object):
         self.detectedCar = 0
         self.detectedWeather = 0
         self.detectedDoor = 0
+        self.is_lane_1 = False
         self.is_minus = 0
         self.short_time_distance = 0
         self.long_time_distance = 0
-        
+
         self.score = 100
         self.ros = _ros
         self.dim = (width, height)
@@ -213,7 +214,7 @@ class HUD(object):
         # self.help = HelpText(pygame.font.Font(mono, 24), width, height)
         self.server_fps = 0
         self.frame = 0
-        self.simulation_time = 0
+        self.run_time = 0
         self._show_info = True
         self._info_text = []
         self._server_clock = pygame.time.Clock()
@@ -225,13 +226,14 @@ class HUD(object):
         self._server_clock.tick()
         self.server_fps = self._server_clock.get_fps()
         self.frame = timestamp.frame
+        # print(self.is_start)
         if (not self.is_start):
-            self.simulation_time = timestamp.elapsed_seconds - timestamp.elapsed_seconds
+            self.run_time = timestamp.elapsed_seconds - timestamp.elapsed_seconds
             self.time_start = timestamp.elapsed_seconds
         elif (self.is_start == 2):
-            self.simulation_time = self.time_end - self.time_start
+            self.run_time = self.time_end - self.time_start
         else:
-            self.simulation_time = timestamp.elapsed_seconds - self.time_start
+            self.run_time = timestamp.elapsed_seconds - self.time_start
             self.time_end = timestamp.elapsed_seconds
 
 
@@ -247,10 +249,9 @@ class HUD(object):
         heading += 'E' if 179.5 > t.rotation.yaw > 0.5 else ''
         heading += 'W' if -0.5 > t.rotation.yaw > -179.5 else ''
         colhist = world.collision_sensor.get_collision_history()
-        if ( (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)) > 1 and self.is_start != 2):
+        if ( (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)) > 6 and self.is_start != 2):
             self.is_start = 1
-            if (( (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)) > 60)):
-                self.is_start = 2
+
         collision = [colhist[x + self.frame - 200] for x in range(0, 200)]
         self.ros.publish_collision(collision[len(collision)-1 ])
         # print()
@@ -265,7 +266,7 @@ class HUD(object):
             '',
             'Vehicle: % 20s' % get_actor_display_name(player, truncate=20),
             'Map:     % 20s' % world.world.get_map().name.split('/')[-1],
-            'Run time: % 18s' % datetime.timedelta(seconds=int(self.simulation_time)),
+            'Run time: % 18s' % datetime.timedelta(seconds=int(self.run_time)),
             '',
             'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
             u'Heading:% 16.0f\N{DEGREE SIGN} % 2s' % (t.rotation.yaw, heading),
@@ -873,7 +874,7 @@ class DualControl(object):
                 self.actor_list.remove(actor)
                 
 
-    def respawn_car_scene_3(self, world_carla):
+    def respawn_car_scene_4(self, world_carla):
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[2])
         for actor in self.actor_list:
             if actor is not None:
@@ -905,7 +906,7 @@ class DualControl(object):
         self.actor_list.append(vehicle2)
         self.actor_list.append(vehicle3)
     
-    def respawn_car_scene_4(self):
+    def respawn_car_scene_3(self):
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[3])
         for actor in self.actor_list:
             if actor is not None:
@@ -990,9 +991,9 @@ class DualControl(object):
                 elif event.key == K_2:
                     self.respawn_car_scene_2()
                 elif event.key == K_3:
-                    self.respawn_car_scene_3(world_carla)
+                    self.respawn_car_scene_3()
                 elif event.key == K_4:
-                    self.respawn_car_scene_4()
+                    self.respawn_car_scene_4(world_carla)
                 elif event.key == K_5:
                     self.respawn_car_scene_5()
                 elif event.key > K_6 and event.key <= K_9:

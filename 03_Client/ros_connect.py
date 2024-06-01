@@ -14,6 +14,8 @@ from config_param import RoundOneScenario
 class RosConnect():
     def __init__(self, _vehicle_controller):
         self.hud = None
+        self.world_carla = None
+        self.controller = None
         self.roundOneScenario = RoundOneScenario()
         self.vehicle_controller = _vehicle_controller
         self.tfl_134_status = 0
@@ -41,6 +43,8 @@ class RosConnect():
         self.pub_speed = rospy.Publisher('speed', String, queue_size=10)
         self.pub_obstacle_distance = rospy.Publisher('/carla/hero/obstacle', CarlaEgoVehicleObstacle, queue_size=10)
         self.pub_is_correct_lane = rospy.Publisher('/carla/hero/is_correct_lane', Bool, queue_size=10)
+        self.pub_current_lane = rospy.Publisher('/carla/hero/current_lane', String, queue_size=10)
+        self.pub_run_time = rospy.Publisher('/carla/hero/run_time', Int32, queue_size=10)
 
         rospy.Subscriber('/carla/hero/vehicle_control_light', String, self.control_light)
         rospy.Subscriber('/carla/hero/vehicle_toggle_FR_door', Int32, self.toggle_FR_door)
@@ -48,8 +52,26 @@ class RosConnect():
         rospy.Subscriber('/carla/hero/vehicle_toggle_RR_door', Int32, self.toggle_RR_door)
         rospy.Subscriber('/carla/hero/vehicle_toggle_RL_door', Int32, self.toggle_RL_door)
         rospy.Subscriber('/carla/traffic_light/status', CarlaTrafficLightStatusList, self.get_traffic_status)
+        rospy.Subscriber('/carla/start_scene', Int32, self.spawn_scene)
+
+    def spawn_scene(self, msg):
+        if (msg.data == 1):
+            self.controller.respawn_car_scene_1(self.world_carla)
+        elif (msg.data == 2):
+            self.controller.respawn_car_scene_2()
+        elif (msg.data == 3):
+            self.controller.respawn_car_scene_3()
+        elif (msg.data == 4):
+            self.controller.respawn_car_scene_4(self.world_carla)
+        elif (msg.data == 5):
+            self.controller.respawn_car_scene_5()
+
     def take_hud(self, _hud):
         self.hud = _hud
+    
+    def take_controller_and_world(self, _controller, _world_carla):
+        self.controller = _controller
+        self.world_carla = _world_carla
 
     def toggle_FR_door(self, msg):
         if (msg.data):
@@ -101,6 +123,11 @@ class RosConnect():
         self.pub_door_status.publish(self.vehicle_controller.get_door_status())
         self.pub_weather_status.publish(self.weather)
         self.pub_is_correct_lane.publish(not self.hud.is_minus)
+        self.pub_run_time.publish(int(self.hud.run_time))
+        if (self.hud.is_lane_1):
+            self.pub_current_lane.publish("right")
+        else:
+            self.pub_current_lane.publish("left")
     
     def publish_collision(self, collision):
         self.pub_collision.publish(collision)

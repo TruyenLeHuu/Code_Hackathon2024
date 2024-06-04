@@ -17,8 +17,8 @@ def main():
             # time.sleep(1)
             # VM.General.vehicle_control_manual(throttle=0, brake=1)
             # VM.General.vehicle_control_light("On")
-            VM.General.start_scene(1)
-            print(VM.General.get_traffic_lights())
+            # VM.General.start_scene(1)
+            print(VM.General.get_is_in_checkpoint())
             time.sleep(1)
             # VM.General.vehicle_control_manual_override(False)
             # break

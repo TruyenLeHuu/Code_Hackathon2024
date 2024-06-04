@@ -44,6 +44,16 @@ class Scenario_Runner():
             p1x, p1y = p2x, p2y
         return inside
 
+    def is_vehicle_in_checkpoint_2(self, vehicle):
+        vehicle_location = vehicle.get_transform().location
+        vehicle_point = (vehicle_location.x, vehicle_location.y)
+        return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.check_point_2)
+    
+    def is_vehicle_in_checkpoint_4(self, vehicle):
+        vehicle_location = vehicle.get_transform().location
+        vehicle_point = (vehicle_location.x, vehicle_location.y)
+        return self.is_point_in_polygon(vehicle_point, self.roundOneScenario.check_point_4)
+    
     def is_vehicle_in_traffic_area_1(self, vehicle):
         vehicle_location = vehicle.get_transform().location
         vehicle_point = (vehicle_location.x, vehicle_location.y)
@@ -80,6 +90,12 @@ class Scenario_Runner():
             hud.is_lane_1 = True
         else:
             hud.is_lane_1 = False
+
+    def check_in_check_point(self, vehicle, ros):
+        if (self.is_vehicle_in_checkpoint_2(vehicle) or self.is_vehicle_in_checkpoint_4(vehicle)):
+            ros.is_in_checkpoint_publish(True)
+        else:
+            ros.is_in_checkpoint_publish(False)
 
     def destroy(self):
         """

@@ -39,6 +39,18 @@ class RoundOneScenario():
             sign_prohibiting_left_turn = 9
             sign_prohibiting_straight_turn = 10
 
+            self.check_point_2 = [
+                (147.3, -38.6),  # Point 1 (x, y)
+                (159.7, -38.6),  # Point 2 (x, y)
+                (159.7, -45.1),  # Point 3 (x, y)
+                (147.3, -45.1)   # Point 4 (x, y)
+            ]
+            self.check_point_4 = [
+                (159.4, 89.4),  # Point 1 (x, y)
+                (144.8, 89.4),  # Point 2 (x, y)
+                (148.8, 96),  # Point 3 (x, y)
+                (159.4, 96)   # Point 4 (x, y)
+            ]
             self.lane_area_1 = [
                 (153.7, -38.1),  # Point 1 (x, y)
                 (153.7, -9.1),  # Point 2 (x, y)
@@ -93,8 +105,8 @@ class RoundOneScenario():
             tranform.position.z = 0.05
 
             turn_left_tranform = Pose()
-            turn_left_tranform.position.x = 142
-            turn_left_tranform.position.y = 6.5
+            turn_left_tranform.position.x = 141.5
+            turn_left_tranform.position.y = 6.6
             turn_left_tranform.position.z = 0.05
 
             speed_limited_30_tranform = Pose()
@@ -137,6 +149,7 @@ class RoundOneScenario():
             self.sign_prohibiting_straight_turn.transform = tranform
             self.sign_prohibiting_straight_turn.type = sign_prohibiting_straight_turn
             
-            self.traffic_sign_list = CarlaTrafficSignList([self.stop_sign, self.sign_speed_limited_30, self.sign_speed_limited_90, self.sign_direct_turn_left, self.sign_direct_straight, self.sign_prohibiting_straight_turn])
+            # self.traffic_sign_list = CarlaTrafficSignList([self.stop_sign, self.sign_speed_limited_30, self.sign_speed_limited_90, self.sign_direct_turn_left, self.sign_direct_straight, self.sign_prohibiting_straight_turn])
             # print(self.traffic_sign_list)
+            self.traffic_sign_list = CarlaTrafficSignList([self.sign_direct_turn_left])
 

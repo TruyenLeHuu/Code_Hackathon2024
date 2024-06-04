@@ -45,6 +45,7 @@ class RosConnect():
         self.pub_is_correct_lane = rospy.Publisher('/carla/hero/is_correct_lane', Bool, queue_size=10)
         self.pub_current_lane = rospy.Publisher('/carla/hero/current_lane', String, queue_size=10)
         self.pub_run_time = rospy.Publisher('/carla/hero/run_time', Int32, queue_size=10)
+        self.pub_is_in_checkpoint = rospy.Publisher('/carla/hero/is_in_checkpoint', Bool, queue_size=10)
 
         rospy.Subscriber('/carla/hero/vehicle_control_light', String, self.control_light)
         rospy.Subscriber('/carla/hero/vehicle_toggle_FR_door', Int32, self.toggle_FR_door)
@@ -53,6 +54,9 @@ class RosConnect():
         rospy.Subscriber('/carla/hero/vehicle_toggle_RL_door', Int32, self.toggle_RL_door)
         rospy.Subscriber('/carla/traffic_light/status', CarlaTrafficLightStatusList, self.get_traffic_status)
         rospy.Subscriber('/carla/start_scene', Int32, self.spawn_scene)
+        
+    def is_in_checkpoint_publish(self, is_in_checkpoint):
+        self.pub_is_in_checkpoint.publish(is_in_checkpoint)
 
     def spawn_scene(self, msg):
         if (msg.data == 1):

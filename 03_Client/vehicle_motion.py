@@ -106,7 +106,7 @@ class World(object):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
         # Set up the sensors.
-        self.collision_sensor = CollisionSensor(self._player, self.hud)
+        self.collision_sensor = CollisionSensor(self._player, self.hud, self._ros_connection)
         self.lane_invasion_sensor = LaneInvasionSensor(self._player, self.hud)
         self.obstacle_detector = ObstacleDetector(self._player, self.hud, self._ros_connection)
         self.gnss_sensor = GnssSensor(self._player)
@@ -461,10 +461,11 @@ class HelpText(object):
 
 
 class CollisionSensor(object):
-    def __init__(self, parent_actor, hud):
+    def __init__(self, parent_actor, hud, _ros):
         self.sensor = None
         self.history = []
         self._parent = parent_actor
+        self.ros = _ros
         self.hud = hud
         world = self._parent.get_world()
         bp = world.get_blueprint_library().find('sensor.other.collision')
@@ -494,6 +495,7 @@ class CollisionSensor(object):
             self.hud.minus_score(1)
             self.hud.collision+=1
             self.hud.notification('Collision with %r => score - 1' % actor_type)
+        # self.ros.publish_collision(intensity)
         self.history.append((event.frame, intensity))
         if len(self.history) > 4000:
             self.history.pop(0)
@@ -738,6 +740,7 @@ class DualControl(object):
         # start_in_autopilot
         self._parent = parent
         self._steer_cache = 0.0
+        self.current_scene = 0
         self._control = carla.VehicleControl()
         self._scenario = ParkingScenario()
         self.actor_list = []
@@ -840,7 +843,7 @@ class DualControl(object):
         self.create_pedestrian(world, start_point, end_point)
 
     def respawn_car_scene_1(self, world_carla):
-
+        self.current_scene = 1
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[0])
 
         for actor in self.actor_list:
@@ -867,6 +870,7 @@ class DualControl(object):
         self.actor_list.append(vehicle)
     
     def respawn_car_scene_2(self):
+        self.current_scene = 2
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[1])
         for actor in self.actor_list:
             if actor is not None:
@@ -875,11 +879,15 @@ class DualControl(object):
                 
 
     def respawn_car_scene_4(self, world_carla):
+        self.current_scene = 4
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[2])
         for actor in self.actor_list:
-            if actor is not None:
-                actor.destroy()
-                self.actor_list.remove(actor)
+            actor.destroy()
+            self.actor_list.remove(actor)
+
+        for actor in self.actor_list:
+            actor.destroy()
+            self.actor_list.remove(actor)
 
         blueprint = random.choice(world_carla.get_blueprint_library().filter('vehicle.tesla.model3'))
 
@@ -894,9 +902,9 @@ class DualControl(object):
             pass
 
         vehicle_init_position  = [
-            carla.Transform(carla.Location(x=151, y=32.6, z=0.5), carla.Rotation(yaw=90)),
-            carla.Transform(carla.Location(x=156.4, y=57.3, z=0.5), carla.Rotation(yaw=90)),
-            carla.Transform(carla.Location(x=151.3, y=77.6, z=0.5), carla.Rotation(yaw=90))]
+            carla.Transform(carla.Location(x=151, y=32.6, z=2.0), carla.Rotation(yaw=90)),
+            carla.Transform(carla.Location(x=156.4, y=57.3, z=2.0), carla.Rotation(yaw=90)),
+            carla.Transform(carla.Location(x=151.3, y=77.6, z=2.0), carla.Rotation(yaw=90))]
         
         vehicle1 = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
         vehicle2 = world_carla.spawn_actor(blueprint, vehicle_init_position[1])
@@ -907,6 +915,7 @@ class DualControl(object):
         self.actor_list.append(vehicle3)
     
     def respawn_car_scene_3(self):
+        self.current_scene = 3
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[3])
         for actor in self.actor_list:
             if actor is not None:
@@ -914,6 +923,7 @@ class DualControl(object):
                 self.actor_list.remove(actor)
 
     def respawn_car_scene_5(self):
+        self.current_scene = 5
         self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[4])
         for actor in self.actor_list:
             if actor is not None:

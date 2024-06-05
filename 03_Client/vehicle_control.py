@@ -8,7 +8,7 @@ from carla import VehicleLightState as vls
 import math
 import random
 
-class Vehicle_Control():
+class  Vehicle_Control():
     def __init__(self):
         """
         construct object CarlaVehicle with server connection and

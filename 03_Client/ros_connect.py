@@ -2,6 +2,7 @@
 
 import rospy
 import json
+import math
 from std_msgs.msg import String, Bool
 from std_msgs.msg import Int32
 from std_msgs.msg import Float32
@@ -93,10 +94,24 @@ class RosConnect():
         if (msg.data):
             self.vehicle_controller.toggle_RL_door()
 
+    def distance(self, x1, y1, x2, y2):
+        return math.sqrt((x2-x1)**2 + (y2 - y1)**2)
+    
     def get_traffic_light_info(self):
         msg = rospy.wait_for_message(
             "/carla/traffic_light/info", CarlaTrafficLightInfoList, timeout=10)
         self.traffic_light_info = msg
+
+        index = 0
+        self.index_1 = 0
+        self.distance_1 = 1000
+        for traffic_info in self.traffic_light_info.traffic_lights:
+            if (self.distance(traffic_info.transform.position.x, traffic_info.transform.position.y, self.roundOneScenario.traffic_light_transform[0].location.x,\
+                               self.roundOneScenario.traffic_light_transform[0].location.y) < self.distance_1):
+                self.index_1 = index
+                self.distance_1 = self.distance(traffic_info.transform.position.x, traffic_info.transform.position.y, self.roundOneScenario.traffic_light_transform[0].location.x,\
+                               self.roundOneScenario.traffic_light_transform[0].location.y)
+            index+=1
 
     def set_obstacle(self, obstacle_actor, obstacle_distance):
         self.obstacle_actor = obstacle_actor
@@ -137,7 +152,10 @@ class RosConnect():
         self.pub_collision.publish(collision)
     
     def publish_traffic_sign_info(self):
-        self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list)
+        if (self.controller.current_scene == 2):
+            self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list_2)
+        else:
+            self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list_3)
         
     def vehicle_control_with_ros(self, control_throttle, control_steer, control_brake, 
                                  vehicle_reverse = False, vehicle_handbrake = False, vehicle_mg_shift = False, vehicle_gear = 0):
@@ -154,13 +172,15 @@ class RosConnect():
     def get_traffic_status(self, message):
         try:
             index = 0
+            self.traffic_light_list.traffic_lights= []
             for traffic_status in message.traffic_lights:
                 traffic_light = CarlaTrafficLight()
                 traffic_light.id = traffic_status.id
                 traffic_light.state = traffic_status.state
                 traffic_light.transform = self.traffic_light_info.traffic_lights[index].transform
+                if (index == self.index_1):
+                    self.traffic_light_list.traffic_lights.append(traffic_light)
                 index = index + 1
-                self.traffic_light_list.traffic_lights.append(traffic_light)
                 # print(index)
             self.pub_traffic_light_status.publish(self.traffic_light_list)
             # print(self.traffic_light_list)

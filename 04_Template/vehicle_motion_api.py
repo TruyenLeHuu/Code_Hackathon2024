@@ -15,7 +15,7 @@ from derived_object_msgs.msg import ObjectArray
 from visualization_msgs.msg import Marker, MarkerArray
 from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo,CarlaTrafficSignList, CarlaEgoVehicleObstacle,
                             CarlaActorList, CarlaTrafficLightStatusList,CarlaEgoVehicleDoorStatus, CarlaTrafficLightList,
-                            CarlaTrafficLightInfoList, CarlaEgoVehicleControl)
+                            CarlaTrafficLightInfoList, CarlaEgoVehicleControl, CarlaEgoVehicleRotation)
 from std_msgs.msg import Bool  # pylint: disable=import-error
 
 TIMEOUT = 20
@@ -58,6 +58,8 @@ class General():
         self.current_lane = None
         self.run_time = None
         self.is_in_checkpoint = None
+        self.vehicle = Vehicle()
+        self.parking_slot = ParkingSlot()
 
         # Initialize ROS node
         self.control_override_pub = rospy.Publisher('/carla/hero/vehicle_control_manual_override', Bool, queue_size=10)
@@ -86,7 +88,6 @@ class General():
             time.sleep(0.5)
 
     def subcribe_carla_topics(self):
-        rospy.Subscriber(   "/clock", Clock, self.get_carla_clock)
         rospy.Subscriber(   "/carla/hero/vehicle_status", CarlaEgoVehicleStatus, self.get_carla_vehicle_status_msg)
         rospy.Subscriber(   "/carla/hero/vehicle_info", CarlaEgoVehicleInfo, self.get_carla_vehicle_info_msg)
         rospy.Subscriber(   "/carla/hero/odometry", Odometry, self.get_carla_odometry_msg)
@@ -186,6 +187,36 @@ class General():
     def start_scene(self, scene_number):
         self.pub_start_scene.publish(scene_number)
 
+    """ Vehicle value return:
+    location:
+        x: 150.9740447998047
+        y: -13.36904525756836
+        z: 0.040282171219587326
+    rotation:
+        roll: -6.103515625e-05
+        pitch: 0.00017758490866981447
+        yaw: -50.21879577636719
+    length: 5.0078253746032715
+    width: 1.8816219568252563
+    """
+    def get_vehicle(self):
+        return self.vehicle
+    
+    """ Parking slot value return:
+        location:
+            x: 150.9740447998047
+            y: -13.36904525756836
+            z: 0.040282171219587326
+        rotation:
+            roll: -6.103515625e-05
+            pitch: 0.00017758490866981447
+            yaw: -50.21879577636719
+        length: 5.0078253746032715
+        width: 1.8816219568252563
+    """
+    def get_parking_slot(self):
+        return self.vehicle
+    
     """ Velocity value return:
         1.2 (m/s)
     """
@@ -240,11 +271,11 @@ class General():
     """ Control value return:
     {   
         header: 
-        seq: 0
-        stamp: 
-            secs: 0
-            nsecs:         0
-        frame_id: ''
+            seq: 0
+            stamp: 
+                secs: 0
+                nsecs:         0
+            frame_id: ''
         throttle: 0.0
         steer: 0.0
         brake: 0.0
@@ -317,8 +348,7 @@ class General():
         return self.door_status
     
     """ Traffic light value return:
-    {   
-        [{
+        {
             id: 213,
             transform: {
                 position:
@@ -332,9 +362,16 @@ class General():
                     w: 6.65790272530563e-07
             },
             state: 0/1/2 (RED=0 YELLOW=1 GREEN=2)
-        },
-        {
-            id: 214,
+        }
+    """
+    def get_traffic_lights(self):
+        if (not self.traffic_lights_status == None):
+            return self.traffic_lights_status.traffic_lights
+    
+    """ Traffic sign value return:
+    {   
+        [{
+            id: 217,
             transform: {
                 position:
                     x: 19.149999618530273
@@ -346,26 +383,40 @@ class General():
                     z: -0.9999999999997784
                     w: 6.65790272530563e-07
             },
-            state: 0/1/2 (RED=0 YELLOW=1 GREEN=2)
+            type: 1/.../10      
+        },
+        {
+            id: 219,
+            transform: {
+                position:
+                    x: 19.149999618530273
+                    y: 9.0
+                    z: 0.0
+                orientation:
+                    x: 0.0
+                    y: -0.0
+                    z: -0.9999999999997784
+                    w: 6.65790272530563e-07
+            },
+            type: 1/.../10      
+                #   Stop = 1
+                #   Speed Limited 30 = 2
+                #   Speed Limited 60 = 3
+                #   Speed Limited 90 = 4
+                #   Direct Turn Left = 5
+                #   Direct Turn Right = 6
+                #   Direct Straight = 7
+                #   Prohibiting right turn = 8
+                #   Prohibiting left turn = 9
+                #   Prohibiting straight turn = 10
         },...
         ]
     }
 
-    Example VM.General.get_traffic_lights()[1].transform.position
-    """
-    def get_traffic_lights(self):
-        if (not self.traffic_lights_status == None):
-            return self.traffic_lights_status.traffic_lights
-    
-    """ Traffic sign value return position of turn left sign:
-    {   
-        x: 19.149999618530273
-        y: 9.0
-        z: 0.0
-    }
+    Example VM.General.get_traffic_signs()[1].transform.position
     """
     def get_traffic_signs(self):
-        return self.traffic_sign_info.traffic_signs[0].transform.position
+        return self.traffic_sign_info.traffic_signs
     
     """ Weather value return:
     {     
@@ -375,23 +426,50 @@ class General():
     def get_weather(self):
         return self.weather
     
+    """ Collision value return:
+    {     
+        493
+    }
+    """
     def get_collision(self):
         return self.collision
     
+    """ is_correct_lane value return:
+    {     
+        True/False
+    }
+    """
     def get_is_correct_lane(self):
         return self.is_correct_lane
     
+    """ current_lane value return:
+    {     
+        ""Left"/"Right"
+    }
+    """
     def get_current_lane(self):
         return self.current_lane
     
+    """ run_time return:
+    {     
+        21
+    }
+    """
     def get_run_time(self):
         return self.run_time
-    
+    """ run_time return:
+    {     
+        True/False
+    }
+    """
     def get_is_in_checkpoint(self):
         return self.is_in_checkpoint
 
-    def get_carla_clock(self, message):
-        self.clock = message
+    """ run_time return: 
+    {     
+        True/False
+    }
+    """
 
     def get_carla_vehicle_status_msg(self, msg):
         self.vehicle_velocity = msg.velocity
@@ -400,6 +478,8 @@ class General():
         self.vehicle_rotation = msg.rotation
         self.vehicle_location = msg.location
         self.vehicle_controls = msg.control
+        self.vehicle.location = msg.location
+        self.vehicle.rotation = msg.rotation
 
     def get_carla_vehicle_info_msg(self, msg):
         """
@@ -664,7 +744,22 @@ class General():
     #     return msg
     #     self.assertNotEqual(len(msg.traffic_lights), 0)
 
+class Vehicle():
+    def __init__(self):
+        self.location = Vector3()
+        self.rotation = CarlaEgoVehicleRotation()
+        self.length = 5.0078253746032715
+        self.width = 1.8816219568252563
 
+class ParkingSlot():
+    def __init__(self):
+        self.location = Vector3()
+        self.rotation = CarlaEgoVehicleRotation()
+        self.rotation.yaw = 0
+        self.location.x = -6.87
+        self.location.y = -38.2
+        self.length = 5.0
+        self.width = 2.9
 
 class VehicleMotionAPI():
 

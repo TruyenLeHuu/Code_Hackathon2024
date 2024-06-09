@@ -755,9 +755,9 @@ class ParkingSlot():
     def __init__(self):
         self.location = Vector3()
         self.rotation = CarlaEgoVehicleRotation()
-        self.rotation.yaw = 0
-        self.location.x = -6.87
-        self.location.y = -38.2
+        self.rotation.yaw = 180
+        self.location.x = 3.81096802
+        self.location.y = -29.91921875
         self.length = 5.0
         self.width = 2.9
 

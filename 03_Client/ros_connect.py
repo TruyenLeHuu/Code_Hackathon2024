@@ -122,8 +122,8 @@ class RosConnect():
 
     def keep_topic_alive(self):
         if (self.alive_counter > 60):
-            control_pub = rospy.Publisher('/carla/hero/vehicle_toggle_FL_door', Int32, queue_size=1)
-            control_pub.publish(0)
+            # control_pub = rospy.Publisher('/carla/hero/vehicle_toggle_FL_door', Int32, queue_size=1)
+            # control_pub.publish(0)
             self.alive_counter = 0
         else:
             self.alive_counter = self.alive_counter + 1
@@ -152,10 +152,7 @@ class RosConnect():
         self.pub_collision.publish(collision)
     
     def publish_traffic_sign_info(self):
-        if (self.controller.current_scene == 2):
-            self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list_2)
-        else:
-            self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list_3)
+        self.pub_traffic_sign_info.publish(self.roundOneScenario.traffic_sign_list_3)
         
     def vehicle_control_with_ros(self, control_throttle, control_steer, control_brake, 
                                  vehicle_reverse = False, vehicle_handbrake = False, vehicle_mg_shift = False, vehicle_gear = 0):

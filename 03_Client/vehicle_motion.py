@@ -863,7 +863,7 @@ class DualControl(object):
         except IndexError:
             pass
         vehicle_init_position  = [
-            carla.Transform(carla.Location(x=-270, y=40, z=0.5), carla.Rotation(yaw=270))]
+            carla.Transform(carla.Location(x=62.30, y=-145.1, z=0.5), carla.Rotation(yaw=3))]
 
         vehicle = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
 
@@ -880,7 +880,7 @@ class DualControl(object):
 
     def respawn_car_scene_4(self, world_carla):
         self.current_scene = 4
-        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[2])
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[3])
         for actor in self.actor_list:
             actor.destroy()
             self.actor_list.remove(actor)
@@ -889,34 +889,34 @@ class DualControl(object):
             actor.destroy()
             self.actor_list.remove(actor)
 
-        blueprint = random.choice(world_carla.get_blueprint_library().filter('vehicle.tesla.model3'))
+        # blueprint = random.choice(world_carla.get_blueprint_library().filter('vehicle.tesla.model3'))
 
-        if blueprint.has_attribute("driver_id"):
-            driver_id = random.choice(
-                blueprint.get_attribute("driver_id").recommended_values
-            )
-            blueprint.set_attribute("driver_id", driver_id)
-        try:
-            blueprint.set_attribute("role_name", "autopilot")
-        except IndexError:
-            pass
+        # if blueprint.has_attribute("driver_id"):
+        #     driver_id = random.choice(
+        #         blueprint.get_attribute("driver_id").recommended_values
+        #     )
+        #     blueprint.set_attribute("driver_id", driver_id)
+        # try:
+        #     blueprint.set_attribute("role_name", "autopilot")
+        # except IndexError:
+        #     pass
 
-        vehicle_init_position  = [
-            carla.Transform(carla.Location(x=151, y=32.6, z=2.0), carla.Rotation(yaw=90)),
-            carla.Transform(carla.Location(x=156.4, y=57.3, z=2.0), carla.Rotation(yaw=90)),
-            carla.Transform(carla.Location(x=151.3, y=77.6, z=2.0), carla.Rotation(yaw=90))]
+        # vehicle_init_position  = [
+        #     carla.Transform(carla.Location(x=151, y=32.6, z=2.0), carla.Rotation(yaw=90)),
+        #     carla.Transform(carla.Location(x=156.4, y=57.3, z=2.0), carla.Rotation(yaw=90)),
+        #     carla.Transform(carla.Location(x=151.3, y=77.6, z=2.0), carla.Rotation(yaw=90))]
         
-        vehicle1 = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
-        vehicle2 = world_carla.spawn_actor(blueprint, vehicle_init_position[1])
-        vehicle3 = world_carla.spawn_actor(blueprint, vehicle_init_position[2])
+        # vehicle1 = world_carla.spawn_actor(blueprint, vehicle_init_position[0])
+        # vehicle2 = world_carla.spawn_actor(blueprint, vehicle_init_position[1])
+        # vehicle3 = world_carla.spawn_actor(blueprint, vehicle_init_position[2])
         
-        self.actor_list.append(vehicle1)
-        self.actor_list.append(vehicle2)
-        self.actor_list.append(vehicle3)
+        # self.actor_list.append(vehicle1)
+        # self.actor_list.append(vehicle2)
+        # self.actor_list.append(vehicle3)
     
     def respawn_car_scene_3(self):
         self.current_scene = 3
-        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[3])
+        self._parent.vehicle_controller.vehicle.set_transform(self._scenario.vehicle_init_position_scene[2])
         for actor in self.actor_list:
             if actor is not None:
                 actor.destroy()

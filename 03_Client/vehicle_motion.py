@@ -778,17 +778,17 @@ class DualControl(object):
             # self._gear_R = int(self._parser.get('G29 Racing Wheel', 'gear_R'))
 
             self._steer_idx = 0
-            self._throttle_idx = 2
-            self._brake_idx = 3
-            self._reverse_idx = 5
-            self._handbrake_idx = 4
+            self._throttle_idx = 5
+            self._brake_idx = 4
+            self._reverse_idx = 2
+            self._handbrake_idx = 3
             
             self._gear_1 = 12
             self._gear_2 = 13
             self._gear_3 = 14
             self._gear_4 = 15
-            self._gear_5 = 16
-            self._gear_R = 17
+            self._gear_5 = 4
+            self._gear_R = 5
 
     def create_pedestrian(self, world, location, end_point):
         # Get the blueprint library
@@ -1107,14 +1107,14 @@ class DualControl(object):
 
         K2 = 1.6  # 1.6
         throttleCmd = K2 + (2.05 * math.log10(
-            -0.7 * jsInputs[self._throttle_idx] + 1.4) - 1.2) / 0.92
+            -0.7 * -1 * jsInputs[self._throttle_idx] + 1.4) - 1.2) / 0.92
         if throttleCmd <= 0:
             throttleCmd = 0
         elif throttleCmd > 1:
             throttleCmd = 1
 
         brakeCmd = 1.6 + (2.05 * math.log10(
-            -0.7 * jsInputs[self._brake_idx] + 1.4) - 1.2) / 0.92
+            -0.7 * -1 * jsInputs[self._brake_idx] + 1.4) - 1.2) / 0.92
         if brakeCmd <= 0:
             brakeCmd = 0
         elif brakeCmd > 1:
